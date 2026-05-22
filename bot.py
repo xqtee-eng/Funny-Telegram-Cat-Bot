@@ -93,6 +93,7 @@ BOT_COMMANDS: tuple[tuple[str, str, str], ...] = (
     ("roast", "/roast <текст>", "М'яко підсмажити текст"),
     ("spam", f"/spam <1-{MAX_SPAM}> <текст>", "Надіслати текст окремими повідомленнями"),
     ("app", "/app", "Відкрити Mini App"),
+    ("language", "/language", "Показати системну мову Telegram"),
     ("cancel", "/cancel", "Скасувати команду, яка чекає текст"),
 )
 
@@ -102,6 +103,11 @@ HELP_TEXT = (
     + "\n\nКоманду можна надіслати без тексту, а потім окремо надіслати текст для ефекту."
     + "\nЯкщо просто надіслати текст без команди, бот застосує випадковий ефект."
 )
+LANGUAGE_LABELS = {
+    "uk": "Українська",
+    "en": "English",
+    "ru": "Русский",
+}
 
 
 class TelegramRateLimitError(RuntimeError):
@@ -251,6 +257,7 @@ class TelegramBot:
         chat_type = chat.get("type", "private")
         user = message.get("from")
         user_id = user.get("id", 0) if isinstance(user, dict) else 0
+        language_code = user.get("language_code", "") if isinstance(user, dict) else ""
         message_id = message.get("message_id")
         web_app_data = message.get("web_app_data")
         if isinstance(web_app_data, dict):
@@ -263,7 +270,7 @@ class TelegramBot:
             return
 
         reply_text = get_reply_text(message)
-        response = self.handle_text(chat_id, user_id, text, reply_text, chat_type)
+        response = self.handle_text(chat_id, user_id, text, reply_text, chat_type, language_code)
         self.send_response(chat_id, response, message_id)
 
     def send_response(
@@ -291,6 +298,7 @@ class TelegramBot:
         text: str,
         reply_text: str | None = None,
         chat_type: str = "private",
+        language_code: str = "",
     ) -> BotResponse:
         command, args = parse_command(text)
         pending_key = (chat_id, user_id)
@@ -303,7 +311,10 @@ class TelegramBot:
             return f"[{effect_name}]\n{result}"
 
         if command in {"/start", "/help"}:
-            return HELP_TEXT
+            return f"{language_status_text(language_code)}\n\n{HELP_TEXT}"
+
+        if command == "/language":
+            return language_status_text(language_code)
 
         if command == "/app":
             web_app_url = os.environ.get(WEB_APP_URL_ENV, "").strip()
@@ -473,6 +484,22 @@ def parse_retry_after(body: str) -> int:
     except (TypeError, ValueError, json.JSONDecodeError):
         return 3
     return max(1, retry_after)
+
+
+def normalize_language_code(language_code: str) -> str:
+    normalized = language_code.strip().lower().replace("_", "-")
+    if not normalized:
+        return ""
+    return normalized.split("-", 1)[0]
+
+
+def language_status_text(language_code: str) -> str:
+    normalized = normalize_language_code(language_code)
+    if not normalized:
+        return "Системна мова Telegram: не вдалось визначити."
+
+    label = LANGUAGE_LABELS.get(normalized, "інша мова")
+    return f"Системна мова Telegram: {label} ({language_code})."
 
 
 def format_wait_time(seconds: int) -> str:

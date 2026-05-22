@@ -179,6 +179,10 @@ button {
   font-weight: 900;
 }
 
+.is-telegram .send-button {
+  display: none;
+}
+
 .send-button:active {
   transform: translateY(1px);
 }

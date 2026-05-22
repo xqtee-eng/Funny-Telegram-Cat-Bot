@@ -12,6 +12,8 @@ The project intentionally uses only the Python standard library for the bot side
 - Meme and roast templates
 - Limited `/spam` command that sends separate messages
 - Telegram Mini App from `mini_app/`
+- Separate browser/Telegram Mini App behavior for the primary button
+- Telegram user system language detection through `from.language_code`
 - One-command local startup on Windows through `start_all.ps1`
 - One-command shutdown through `stop_all.ps1`
 - Unit tests for bot parsing and text tools
@@ -99,6 +101,8 @@ If the Mini App opens but the send button does not deliver anything to the chat,
 
 Then press the Web App button that the bot sends in the chat. Telegram allows `sendData()` most reliably from that bot-provided Web App button. The bottom menu button is still useful for opening the interface, but some Telegram clients do not send data back from that launch mode.
 
+When the Mini App is opened as a normal website, the page shows a regular copy button. When it is opened inside Telegram, the page hides that website button and uses Telegram's native bottom button instead.
+
 ## Stop Everything
 
 Stop the bot, Mini App server, and tunnel:
@@ -166,6 +170,7 @@ After startup, the bot registers its Telegram command menu. In Telegram, type `/
 | `/roast <text>` | Create a light roast |
 | `/spam <1-50> <text>` | Send text as separate messages |
 | `/app` | Show Mini App open button |
+| `/language` | Show detected Telegram system language |
 | `/cancel` | Cancel a command waiting for text |
 
 Text commands can be used directly:
@@ -191,6 +196,11 @@ Telegram.WebApp.sendData(...)
 The frontend sends action data to the bot. The bot receives `web_app_data`, applies the selected effect, and sends the result back into the chat.
 
 For sending generated text back to the chat, prefer opening the Mini App through `/app`. If a Telegram client opens the Mini App from the bottom menu but ignores the send button, this is a Telegram launch-mode limitation, not a bot crash.
+
+The Mini App has separate behavior by environment:
+
+- browser/site mode: one visible button copies the result
+- Telegram mode: the in-page send button is hidden and Telegram's native bottom button sends data to the bot
 
 For real public use, deploy `mini_app/` to a stable HTTPS host and set:
 

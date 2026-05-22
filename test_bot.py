@@ -16,6 +16,8 @@ from bot import (
     bot_command_payload,
     force_reply_markup,
     format_wait_time,
+    language_status_text,
+    normalize_language_code,
     parse_retry_after,
     web_app_keyboard,
 )
@@ -114,6 +116,24 @@ class BotCommandTest(unittest.TestCase):
     def test_repeat_command_is_removed(self) -> None:
         bot = TelegramBot("token")
         self.assertEqual(bot.handle_text(1, 10, "/repeat 2 привіт"), "Не знаю таку команду. Напиши /help.")
+
+    def test_start_reports_user_language(self) -> None:
+        bot = TelegramBot("token")
+        response = bot.handle_text(1, 10, "/start", language_code="uk")
+        self.assertIn("Українська (uk)", response)
+        self.assertIn("/random", response)
+
+    def test_language_command_reports_unknown_language(self) -> None:
+        bot = TelegramBot("token")
+        self.assertEqual(
+            bot.handle_text(1, 10, "/language"),
+            "Системна мова Telegram: не вдалось визначити.",
+        )
+
+    def test_language_helpers_normalize_region_codes(self) -> None:
+        self.assertEqual(normalize_language_code("uk-UA"), "uk")
+        self.assertEqual(normalize_language_code("en_US"), "en")
+        self.assertEqual(language_status_text("en-US"), "Системна мова Telegram: English (en-US).")
 
     def test_app_command_requires_url(self) -> None:
         bot = TelegramBot("token")

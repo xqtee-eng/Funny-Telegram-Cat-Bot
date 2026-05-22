@@ -12,6 +12,7 @@ const randomFillButton = document.querySelector("#randomFillButton");
 const activeEffectLabel = document.querySelector("#activeEffectLabel");
 const statusLine = document.querySelector("#statusLine");
 const effects = Array.from(document.querySelectorAll(".effect[data-action]"));
+const isTelegramWebApp = Boolean(tg?.initData || tg?.initDataUnsafe?.user);
 
 const SPAM_MAX = 50;
 const RANDOM_MAX = 120;
@@ -219,7 +220,8 @@ function sendToBot() {
   });
 
   if (!tg?.sendData) {
-    statusLine.textContent = "Відкрий Mini App через кнопку /app у чаті з ботом, щоб Telegram дозволив відправку.";
+    navigator.clipboard?.writeText(output.value || output.textContent);
+    statusLine.textContent = "Скопійовано. Щоб надіслати в чат, відкрий Mini App через /app у Telegram.";
     return;
   }
 
@@ -265,11 +267,18 @@ randomFillButton.addEventListener("click", () => {
 
 sendButton.addEventListener("click", sendToBot);
 
-tg?.ready?.();
-tg?.expand?.();
-tg?.MainButton?.setText?.("Надіслати боту");
-tg?.MainButton?.enable?.();
-tg?.MainButton?.show?.();
-tg?.MainButton?.onClick?.(sendToBot);
+document.body.classList.toggle("is-telegram", isTelegramWebApp);
+
+if (isTelegramWebApp) {
+  tg.ready?.();
+  tg.expand?.();
+  tg.MainButton?.setText?.("Надіслати боту");
+  tg.MainButton?.enable?.();
+  tg.MainButton?.show?.();
+  tg.MainButton?.onClick?.(sendToBot);
+} else {
+  sendButton.textContent = "Скопіювати результат";
+  statusLine.textContent = "Відкрито як сайт: тут можна копіювати результат, а відправка в чат працює через Telegram.";
+}
 
 render();
