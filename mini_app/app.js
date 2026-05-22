@@ -210,7 +210,59 @@ function render() {
   output.textContent = output.value;
 }
 
-function sendToBot() {
+function resultText() {
+  return String(output.value || output.textContent || "").trim();
+}
+
+async function copyText(text) {
+  if (!text) return false;
+
+  try {
+    if (navigator.clipboard?.writeText && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // Fall back to the old selection API below.
+  }
+
+  const helper = document.createElement("textarea");
+  helper.value = text;
+  helper.setAttribute("readonly", "");
+  helper.style.position = "fixed";
+  helper.style.left = "-9999px";
+  helper.style.top = "0";
+  document.body.appendChild(helper);
+  helper.focus();
+  helper.select();
+  helper.setSelectionRange(0, helper.value.length);
+
+  let copied = false;
+  try {
+    copied = document.execCommand("copy");
+  } catch {
+    copied = false;
+  } finally {
+    helper.remove();
+  }
+
+  return copied;
+}
+
+async function copyResult() {
+  const copied = await copyText(resultText());
+  statusLine.textContent = copied
+    ? "Скопійовано."
+    : "Не вдалось скопіювати автоматично. Виділи результат вручну.";
+  tg?.showPopup?.({
+    title: copied ? "Готово" : "Не вийшло",
+    message: copied ? "Результат скопійовано." : "Виділи результат вручну і скопіюй.",
+    buttons: [{ type: "ok" }],
+  });
+  return copied;
+}
+
+async function sendToBot() {
   statusLine.textContent = "";
   const data = JSON.stringify({
     action: selectedAction,
@@ -220,8 +272,10 @@ function sendToBot() {
   });
 
   if (!tg?.sendData) {
-    navigator.clipboard?.writeText(output.value || output.textContent);
-    statusLine.textContent = "Скопійовано. Щоб надіслати в чат, відкрий Mini App через /app у Telegram.";
+    const copied = await copyResult();
+    if (copied) {
+      statusLine.textContent = "Скопійовано. Щоб надіслати в чат, відкрий Mini App через /app у Telegram.";
+    }
     return;
   }
 
@@ -255,10 +309,7 @@ input.addEventListener("input", render);
 amountInput.addEventListener("input", render);
 intensityInput.addEventListener("input", render);
 
-copyButton.addEventListener("click", async () => {
-  await navigator.clipboard?.writeText(output.value || output.textContent);
-  tg?.showPopup?.({ title: "Готово", message: "Скопійовано.", buttons: [{ type: "ok" }] });
-});
+copyButton.addEventListener("click", copyResult);
 
 randomFillButton.addEventListener("click", () => {
   input.value = pick(samples);
