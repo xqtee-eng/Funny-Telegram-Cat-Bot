@@ -167,6 +167,30 @@ button {
   color: var(--accent-2);
 }
 
+.send-button {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 12px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--tg-theme-button-color, var(--accent));
+  color: var(--tg-theme-button-text-color, #041611);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.send-button:active {
+  transform: translateY(1px);
+}
+
+.status-line {
+  min-height: 18px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
 .control-strip {
   display: grid;
   grid-template-columns: 116px 1fr;

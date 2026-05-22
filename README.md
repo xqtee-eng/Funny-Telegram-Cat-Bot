@@ -91,6 +91,14 @@ What this script does:
 
 Keep this PowerShell window open while the bot is running.
 
+If the Mini App opens but the send button does not deliver anything to the chat, open the bot chat and send:
+
+```text
+/app
+```
+
+Then press the Web App button that the bot sends in the chat. Telegram allows `sendData()` most reliably from that bot-provided Web App button. The bottom menu button is still useful for opening the interface, but some Telegram clients do not send data back from that launch mode.
+
 ## Stop Everything
 
 Stop the bot, Mini App server, and tunnel:
@@ -182,6 +190,8 @@ Telegram.WebApp.sendData(...)
 
 The frontend sends action data to the bot. The bot receives `web_app_data`, applies the selected effect, and sends the result back into the chat.
 
+For sending generated text back to the chat, prefer opening the Mini App through `/app`. If a Telegram client opens the Mini App from the bottom menu but ignores the send button, this is a Telegram launch-mode limitation, not a bot crash.
+
 For real public use, deploy `mini_app/` to a stable HTTPS host and set:
 
 ```env
@@ -251,6 +261,16 @@ python sync_tunnel_url.py https://your-current-url.lhr.life
 ```
 
 Then fully close and reopen the Mini App in Telegram.
+
+### Mini App opens, but `Надіслати боту` does not send
+
+Open the bot chat and run:
+
+```text
+/app
+```
+
+Use the Web App button from the bot message. Some Telegram clients do not deliver `sendData()` when the app was opened from the persistent bottom menu button.
 
 ### `sync_tunnel_url.py` returns HTTP 503
 

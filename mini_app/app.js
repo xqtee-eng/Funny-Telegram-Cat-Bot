@@ -7,8 +7,10 @@ const amountLabel = document.querySelector("#amountLabel");
 const intensityInput = document.querySelector("#intensityInput");
 const intensityLabel = document.querySelector("#intensityLabel");
 const copyButton = document.querySelector("#copyButton");
+const sendButton = document.querySelector("#sendButton");
 const randomFillButton = document.querySelector("#randomFillButton");
 const activeEffectLabel = document.querySelector("#activeEffectLabel");
+const statusLine = document.querySelector("#statusLine");
 const effects = Array.from(document.querySelectorAll(".effect[data-action]"));
 
 const SPAM_MAX = 50;
@@ -21,6 +23,12 @@ const wordsPool = [
   "батон", "драма", "банан", "телепорт", "піжама", "картопля", "пилосос",
   "мікрохвильовка", "вареник", "батискаф", "креветка", "супергерой", "турбобатон",
   "екскаватор", "паляниця", "пончик", "вайб", "шкарпетка", "калькулятор",
+  "пиріжок", "каструля", "стікер", "хрумкий", "кринж", "легендарний", "трамвай",
+  "бургер", "бульбашка", "лохина", "пульт", "тапок", "понеділок", "дискотека",
+  "йогурт", "сковорідка", "сирена", "хмаринка", "фікус", "сарделька", "мемолог",
+  "гарбуз", "круасан", "чебурек", "магнітофон", "сюрприз", "завгосп", "кнопкодав",
+  "мегафон", "жужик", "супчик", "галактичний", "сосиска", "комбайн", "танцюрист",
+  "директор", "шалений", "пранк", "блискавка", "дзвіночок", "інопланетянин",
 ];
 
 const emojis = ["😂", "🔥", "💀", "🤯", "✨", "🫠", "😎", "🥔", "🚀", "🍕", "🧃", "🪩", "🤌", "📢", "🧀", "🫡"];
@@ -30,6 +38,10 @@ const samples = [
   "пельмень натиснув не ту кнопку",
   "нейронка знову щось придумала",
   "каструля просить адмінку",
+  "тапок знайшов сенс життя",
+  "калькулятор образився на математику",
+  "шаурма вийшла на новий рівень",
+  "понеділок отримав бан",
 ];
 const memes = [
   "Коли {text}, але батон уже в космосі.",
@@ -39,6 +51,19 @@ const memes = [
   "Якщо життя дало тобі {text}, зроби з цього мем.",
   "У паралельному всесвіті {text} уже стало державною програмою.",
   "Мама: не роби {text}. Я через 5 хвилин: {text}.",
+  "Я: сьогодні без пригод. Також я через 10 хвилин: {text}.",
+  "Коли хотів нормально, але вийшло {text}.",
+  "Адмін пішов на хвилинку, і тут почалось: {text}.",
+  "Цей момент, коли {text} звучить занадто переконливо.",
+  "Вчора це був жарт, сьогодні це вже {text}.",
+  "Не чіпай, це {text}, воно працює на чесному слові.",
+  "У підручнику з хаосу перший розділ називається: {text}.",
+  "Коли всі мовчать, але {text} вже все пояснило.",
+  "Мемологія 101: бачиш {text} - робиш скрін.",
+  "Якби цей чат був фільмом, назва була б: {text}.",
+  "Ніхто: абсолютно ніхто. Пельмень у кутку: {text}.",
+  "Це {text}, але з вайбом генерального плану.",
+  "Коли мозок сказав sleep, а руки написали: {text}.",
 ];
 const roasts = [
   "{text}? Це звучить як план, який писали на серветці.",
@@ -47,6 +72,13 @@ const roasts = [
   "{text} не провал, просто дуже смілива версія хаосу.",
   "{text} зайшло в чат і зробило вигляд, що так і треба.",
   "{text} виглядає як ідея після третьої кави.",
+  "{text} має енергію кнопки, яку не треба було натискати.",
+  "{text} настільки дивне, що навіть рандом попросив інструкцію.",
+  "{text} виглядає як план Б, коли план А був пельмень.",
+  "{text} зайшло занадто впевнено для такої кількості хаосу.",
+  "{text} звучить як повідомлення, яке треба було стерти, але вже пізно.",
+  "{text} - це не помилка, це характер.",
+  "{text} настільки мемне, що йому потрібен власний адмін.",
 ];
 const zalgoMarks = ["\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0306", "\u0307", "\u0308", "\u0309", "\u030a", "\u030b", "\u030c"];
 
@@ -178,6 +210,7 @@ function render() {
 }
 
 function sendToBot() {
+  statusLine.textContent = "";
   const data = JSON.stringify({
     action: selectedAction,
     text: input.value.trim(),
@@ -186,13 +219,18 @@ function sendToBot() {
   });
 
   if (!tg?.sendData) {
-    output.textContent = "Відкрий Mini App саме через кнопку Telegram-бота, щоб надіслати результат.";
+    statusLine.textContent = "Відкрий Mini App через кнопку /app у чаті з ботом, щоб Telegram дозволив відправку.";
     return;
   }
 
   try {
+    tg.MainButton?.showProgress?.(false);
     tg.sendData(data);
+    statusLine.textContent = "Надіслано. Якщо чат не оновився, відкрий Mini App через /app, а не через нижнє меню.";
+    window.setTimeout(() => tg.MainButton?.hideProgress?.(), 1200);
   } catch {
+    tg.MainButton?.hideProgress?.();
+    statusLine.textContent = "Telegram не прийняв дані. Відкрий Mini App через /app у чаті з ботом.";
     tg.showPopup?.({
       title: "Не вийшло",
       message: "Telegram не прийняв дані. Скопіюй результат або відкрий Mini App через кнопку бота ще раз.",
@@ -225,9 +263,12 @@ randomFillButton.addEventListener("click", () => {
   render();
 });
 
+sendButton.addEventListener("click", sendToBot);
+
 tg?.ready?.();
 tg?.expand?.();
 tg?.MainButton?.setText?.("Надіслати боту");
+tg?.MainButton?.enable?.();
 tg?.MainButton?.show?.();
 tg?.MainButton?.onClick?.(sendToBot);
 
