@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FunnyBot Mini App</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="app-header">
+        <div class="brand-mark">F</div>
+        <div class="brand-copy">
+          <p>FunnyBot</p>
+          <h1>Text Lab</h1>
+        </div>
+        <button class="ghost-button" id="randomFillButton" type="button">Fill</button>
+      </header>
+
+      <section class="workspace">
+        <div class="section-head">
+          <h2>Effect</h2>
+          <span id="activeEffectLabel">Meme</span>
+        </div>
+
+        <div class="effect-grid" id="effectGrid" aria-label="Ефекти">
+          <button class="effect is-active" data-action="meme" type="button">Meme</button>
+          <button class="effect" data-action="roast" type="button">Roast</button>
+          <button class="effect" data-action="emoji" type="button">Emoji</button>
+          <button class="effect" data-action="random" type="button">Random text</button>
+          <button class="effect" data-action="mock" type="button">Mock</button>
+          <button class="effect" data-action="reverse" type="button">Reverse</button>
+          <button class="effect" data-action="shuffle" type="button">Shuffle</button>
+          <button class="effect" data-action="clap" type="button">Clap</button>
+          <button class="effect" data-action="vapor" type="button">Vapor</button>
+          <button class="effect" data-action="zalgo" type="button">Zalgo</button>
+          <button class="effect" data-action="caps" type="button">Caps</button>
+          <button class="effect" data-action="lower" type="button">Lower</button>
+          <button class="effect" data-action="title" type="button">Title</button>
+          <button class="effect is-danger" data-action="spam" type="button">Spam</button>
+        </div>
+
+        <div class="control-strip">
+          <label class="control">
+            <span id="amountLabel">Amount</span>
+            <input id="amountInput" type="number" min="1" max="120" value="12" />
+          </label>
+          <label class="control range-control">
+            <span id="intensityLabel">Intensity</span>
+            <input id="intensityInput" type="range" min="1" max="5" value="2" />
+          </label>
+        </div>
+      </section>
+
+      <section class="workspace text-stack">
+        <label class="field">
+          <span>Input</span>
+          <textarea id="textInput" rows="5" placeholder="Напиши текст..."></textarea>
+        </label>
+
+        <div class="result-head">
+          <h2>Result</h2>
+          <button class="ghost-button" id="copyButton" type="button">Copy</button>
+        </div>
+        <output id="resultOutput">Введи текст або обери Random text.</output>
+      </section>
+    </main>
+    <script src="./app.js"></script>
+  </body>
+</html>

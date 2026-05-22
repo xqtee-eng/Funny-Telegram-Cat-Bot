@@ -1,0 +1,14 @@
+.env
+__pycache__/
+*.py[cod]
+
+*.log
+*.out.log
+*.err.log
+
+chrome-profile/
+chrome-profile-mobile/
+mini_app_preview*.png
+localhostrun_known_hosts
+
+tools/
