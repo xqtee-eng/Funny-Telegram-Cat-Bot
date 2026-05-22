@@ -2,7 +2,6 @@ $ErrorActionPreference = "Stop"
 
 Set-Location $PSScriptRoot
 
-$Python = "python"
 $Port = 8787
 $HostAddress = "127.0.0.1"
 $SiteUrl = "http://${HostAddress}:${Port}/"
@@ -10,6 +9,35 @@ $ServerOut = Join-Path $PSScriptRoot "mini_app_server.out.log"
 $ServerErr = Join-Path $PSScriptRoot "mini_app_server.err.log"
 $TunnelOut = Join-Path $PSScriptRoot "localhostrun.out.log"
 $TunnelErr = Join-Path $PSScriptRoot "localhostrun.err.log"
+
+function Resolve-PythonCommand {
+    if (Get-Command "python" -ErrorAction SilentlyContinue) {
+        return "python"
+    }
+    if (Get-Command "py" -ErrorAction SilentlyContinue) {
+        return "py -3"
+    }
+
+    $fallback = Join-Path $env:LOCALAPPDATA "Programs\Python\Python311\python.exe"
+    if (Test-Path $fallback) {
+        return $fallback
+    }
+
+    throw "Python was not found. Install Python 3.11+ or add it to PATH."
+}
+
+$Python = Resolve-PythonCommand
+
+function Invoke-Python {
+    param([string[]] $Arguments)
+
+    if ($Python -eq "py -3") {
+        & py -3 @Arguments
+    }
+    else {
+        & $Python @Arguments
+    }
+}
 
 function Test-HttpOk {
     param([string] $Url)
@@ -79,8 +107,15 @@ Stop-ExistingHelpers
 
 Write-Host "Starting Mini App server on $SiteUrl"
 if (-not (Test-HttpOk $SiteUrl)) {
-    Start-Process -FilePath $Python `
-        -ArgumentList @("-m", "http.server", "$Port", "--directory", "mini_app") `
+    $serverFile = $Python
+    $serverArgs = @("-m", "http.server", "$Port", "--directory", "mini_app")
+    if ($Python -eq "py -3") {
+        $serverFile = "py"
+        $serverArgs = @("-3") + $serverArgs
+    }
+
+    Start-Process -FilePath $serverFile `
+        -ArgumentList $serverArgs `
         -RedirectStandardOutput $ServerOut `
         -RedirectStandardError $ServerErr `
         -WindowStyle Hidden
@@ -121,10 +156,10 @@ Write-Host "Tunnel URL: $TunnelUrl"
 Wait-ForHttpOk -Url $TunnelUrl
 
 Write-Host "Syncing Telegram Mini App button..."
-& $Python "sync_tunnel_url.py"
+Invoke-Python @("sync_tunnel_url.py", $TunnelUrl)
 
 Write-Host ""
 Write-Host "Bot is starting. Keep this window open."
 Write-Host "Press Ctrl+C to stop the bot. Use .\stop_all.ps1 to stop the site/tunnel too."
 Write-Host ""
-& $Python "bot.py"
+Invoke-Python @("bot.py")

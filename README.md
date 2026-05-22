@@ -129,6 +129,12 @@ After the tunnel starts, update the Telegram menu button:
 python sync_tunnel_url.py
 ```
 
+If you already have a working `localhost.run` URL and want to force Telegram to use exactly that URL:
+
+```powershell
+python sync_tunnel_url.py https://your-current-url.lhr.life
+```
+
 ## Bot Commands
 
 After startup, the bot registers its Telegram command menu. In Telegram, type `/` in the chat to see the command list.
@@ -236,9 +242,25 @@ powershell -ExecutionPolicy Bypass -File .\stop_all.ps1
 powershell -ExecutionPolicy Bypass -File .\start_all.ps1
 ```
 
+### URL opens in browser, but Telegram Mini App opens another/broken page
+
+Telegram may still have an old menu button URL. Sync the exact working URL:
+
+```powershell
+python sync_tunnel_url.py https://your-current-url.lhr.life
+```
+
+Then fully close and reopen the Mini App in Telegram.
+
 ### `sync_tunnel_url.py` returns HTTP 503
 
 The tunnel exists but is not connected to the local site yet, or the old URL was used. Restart the tunnel or use `start_all.ps1`, which waits until the tunnel is ready.
+
+Also check that the local Mini App server is running:
+
+```powershell
+Invoke-WebRequest -Uri http://127.0.0.1:8787/ -UseBasicParsing
+```
 
 ### Bot answers twice
 

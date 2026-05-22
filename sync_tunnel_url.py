@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import re
+import sys
 import urllib.request
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from bot import WEB_APP_URL_ENV, TelegramBot, load_dotenv
 
 LOG_PATH = Path("localhostrun.out.log")
 ENV_PATH = Path(".env")
+TUNNEL_URL_PATTERN = re.compile(r"https://[a-z0-9-]+\.lhr\.life")
 
 
 def find_latest_tunnel_url(log_path: Path = LOG_PATH) -> str:
@@ -17,10 +19,17 @@ def find_latest_tunnel_url(log_path: Path = LOG_PATH) -> str:
         raise RuntimeError(f"{log_path} not found.")
 
     content = log_path.read_text(encoding="utf-8", errors="ignore")
-    urls = re.findall(r"https://[a-z0-9-]+\.lhr\.life", content)
+    urls = TUNNEL_URL_PATTERN.findall(content)
     if not urls:
         raise RuntimeError("No localhost.run HTTPS URL found in tunnel log.")
     return urls[-1]
+
+
+def normalize_url(value: str) -> str:
+    value = value.strip().rstrip("/")
+    if not TUNNEL_URL_PATTERN.fullmatch(value):
+        raise RuntimeError(f"Invalid localhost.run HTTPS URL: {value}")
+    return value
 
 
 def assert_url_works(url: str) -> None:
@@ -46,7 +55,7 @@ def update_env_value(path: Path, key: str, value: str) -> None:
 
 
 def main() -> None:
-    url = find_latest_tunnel_url()
+    url = normalize_url(sys.argv[1]) if len(sys.argv) > 1 else find_latest_tunnel_url()
     assert_url_works(url)
     update_env_value(ENV_PATH, WEB_APP_URL_ENV, url)
 

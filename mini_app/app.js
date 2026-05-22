@@ -48,7 +48,7 @@ const roasts = [
   "{text} зайшло в чат і зробило вигляд, що так і треба.",
   "{text} виглядає як ідея після третьої кави.",
 ];
-const zalgoMarks = ["̀", "́", "̂", "̃", "̄", "̆", "̇", "̈", "̉", "̊", "̋", "̌"];
+const zalgoMarks = ["\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0306", "\u0307", "\u0308", "\u0309", "\u030a", "\u030b", "\u030c"];
 
 let selectedAction = "meme";
 
@@ -88,10 +88,10 @@ function vapor(text) {
   return [...text.trim()]
     .map((char, index, chars) => {
       const code = char.charCodeAt(0);
-      if (char === " ") return "　";
+      if (char === " ") return "\u3000";
       if (code >= 33 && code <= 126) return String.fromCharCode(code + 0xfee0);
       const next = chars[index + 1] || "";
-      return /\p{L}|\p{N}/u.test(char) && /\p{L}|\p{N}/u.test(next) ? `${char}　` : char;
+      return /\p{L}|\p{N}/u.test(char) && /\p{L}|\p{N}/u.test(next) ? `${char}\u3000` : char;
     })
     .join("");
 }
@@ -167,7 +167,7 @@ function updateControls() {
   if (selectedAction === "spam" && Number(amountInput.value) < 3) amountInput.value = "3";
 
   intensityInput.disabled = !usesIntensity;
-  intensityLabel.textContent = usesIntensity ? "Intensity" : "Intensity";
+  intensityLabel.textContent = "Intensity";
   activeEffectLabel.textContent = effects.find((effect) => effect.dataset.action === selectedAction)?.textContent || selectedAction;
 }
 
@@ -184,12 +184,18 @@ function sendToBot() {
     count: getAmount(),
     intensity: clamp(Number(intensityInput.value) || 1, 1, 5),
   });
+
+  if (!tg?.sendData) {
+    output.textContent = "Відкрий Mini App саме через кнопку Telegram-бота, щоб надіслати результат.";
+    return;
+  }
+
   try {
-    tg?.sendData(data);
+    tg.sendData(data);
   } catch {
-    tg?.showPopup?.({
+    tg.showPopup?.({
       title: "Не вийшло",
-      message: "Відкрий Mini App через кнопку від бота. Результат можна скопіювати.",
+      message: "Telegram не прийняв дані. Скопіюй результат або відкрий Mini App через кнопку бота ще раз.",
       buttons: [{ type: "ok" }],
     });
   }
