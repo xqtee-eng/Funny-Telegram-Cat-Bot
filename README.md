@@ -101,7 +101,7 @@ If the Mini App opens but the send button does not deliver anything to the chat,
 
 Then press the Web App button that the bot sends in the chat. Telegram allows `sendData()` most reliably from that bot-provided Web App button. The bottom menu button is still useful for opening the interface, but some Telegram clients do not send data back from that launch mode.
 
-When the Mini App is opened as a normal website, the page shows a regular copy button. When it is opened inside Telegram, the page hides that website button and uses Telegram's native bottom button instead.
+When the Mini App is opened as a normal website, the primary button copies the result. When it is opened inside Telegram, the same in-page primary button sends the result to the bot. The native Telegram bottom MainButton is hidden to avoid duplicate buttons and client-specific click issues.
 Copying uses the modern Clipboard API first and falls back to the older selection-based copy method when a browser or Telegram WebView blocks clipboard permissions.
 
 ## Stop Everything
@@ -200,8 +200,9 @@ For sending generated text back to the chat, prefer opening the Mini App through
 
 The Mini App has separate behavior by environment:
 
-- browser/site mode: one visible button copies the result
-- Telegram mode: the in-page send button is hidden and Telegram's native bottom button sends data to the bot
+- browser/site mode: the primary button copies the result
+- Telegram mode: the same primary button sends data to the bot
+- Telegram native bottom MainButton is intentionally hidden to avoid duplicate or unreliable send buttons
 
 For real public use, deploy `mini_app/` to a stable HTTPS host and set:
 

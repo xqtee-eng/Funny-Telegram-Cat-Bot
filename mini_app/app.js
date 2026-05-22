@@ -280,12 +280,17 @@ async function sendToBot() {
   }
 
   try {
-    tg.MainButton?.showProgress?.(false);
+    sendButton.disabled = true;
+    sendButton.textContent = "Надсилаю...";
     tg.sendData(data);
-    statusLine.textContent = "Надіслано. Якщо чат не оновився, відкрий Mini App через /app, а не через нижнє меню.";
-    window.setTimeout(() => tg.MainButton?.hideProgress?.(), 1200);
+    statusLine.textContent = "Надіслано. Якщо чат не оновився, відкрий Mini App через /app у чаті з ботом.";
+    window.setTimeout(() => {
+      sendButton.disabled = false;
+      sendButton.textContent = "Надіслати боту";
+    }, 1200);
   } catch {
-    tg.MainButton?.hideProgress?.();
+    sendButton.disabled = false;
+    sendButton.textContent = "Надіслати боту";
     statusLine.textContent = "Telegram не прийняв дані. Відкрий Mini App через /app у чаті з ботом.";
     tg.showPopup?.({
       title: "Не вийшло",
@@ -323,10 +328,9 @@ document.body.classList.toggle("is-telegram", isTelegramWebApp);
 if (isTelegramWebApp) {
   tg.ready?.();
   tg.expand?.();
-  tg.MainButton?.setText?.("Надіслати боту");
-  tg.MainButton?.enable?.();
-  tg.MainButton?.show?.();
-  tg.MainButton?.onClick?.(sendToBot);
+  tg.MainButton?.hide?.();
+  sendButton.textContent = "Надіслати боту";
+  statusLine.textContent = "Відкрито в Telegram: кнопка нижче надішле результат у чат.";
 } else {
   sendButton.textContent = "Скопіювати результат";
   statusLine.textContent = "Відкрито як сайт: тут можна копіювати результат, а відправка в чат працює через Telegram.";

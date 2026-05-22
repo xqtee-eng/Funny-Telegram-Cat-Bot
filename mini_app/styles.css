@@ -179,12 +179,14 @@ button {
   font-weight: 900;
 }
 
-.is-telegram .send-button {
-  display: none;
-}
-
 .send-button:active {
   transform: translateY(1px);
+}
+
+.send-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+  transform: none;
 }
 
 .status-line {
